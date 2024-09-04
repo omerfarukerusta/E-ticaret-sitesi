@@ -28,7 +28,7 @@ const HeaderTop = () => {
 
 
                     <div className="text-gray-500 text-[12px]">
-                        SAAT 15:00 E KADAR SİPARİŞ VER<b>AYNI GÜN KAPINDA</b>
+                        SAAT 15:00 E KADAR SİPARİŞ VER <b>AYNI GÜN KAPINDA</b>
                     </div>
 
                     <div className="flex gap-4">
