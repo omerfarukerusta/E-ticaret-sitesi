@@ -7,7 +7,7 @@ interface propsType {
     title: string;
     desc: string;
     rating: number;
-    price: string;
+    price: number;
 }
 
 const ProductCard: React.FC<propsType> = ({ img, title, desc, rating, price }) => {
@@ -82,7 +82,7 @@ const ProductCard: React.FC<propsType> = ({ img, title, desc, rating, price }) =
 
             <div className="font-bold flex gap-4">
                 ${price}
-                <del className="text-gray-500 font-normal">${parseInt(price) + 50}.00</del>
+                <del className="text-gray-500 font-normal">${(price) + 50}.00</del>
             </div>
         </div>
     </div>

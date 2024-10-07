@@ -1,5 +1,5 @@
-export async function getData({ path }: { path: string }) {
-  const url = `https://localhost:3000/${path}`;
+export async function getData() {
+  const url = `http://localhost:5269/api/EticaretApi/GetProducts`;
   try {
     const response = await fetch(url);
     if (!response.ok) {

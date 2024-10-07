@@ -1,5 +1,6 @@
 import React from "react";
 import { ProductTable } from "./_components/product-table";
+import AddProductModal from "@/components/add-product-modal";
 
 function AdminPage() {
   return (

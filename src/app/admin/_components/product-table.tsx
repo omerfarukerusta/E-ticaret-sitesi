@@ -1,5 +1,7 @@
 "use client";
 
+import { getData } from '@/lib/api'
+
 import * as React from "react";
 import {
   ColumnDef,
@@ -36,47 +38,61 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-const data: Payment[] = [
+
+const data: Product[] = [
   {
-    id: "m5gr84i9",
-    amount: 316,
-    status: "success",
-    email: "ken99@yahoo.com",
-  },
-  {
-    id: "3u1reuv4",
-    amount: 242,
-    status: "success",
-    email: "Abe45@gmail.com",
-  },
-  {
-    id: "derv1ws0",
-    amount: 837,
-    status: "processing",
-    email: "Monserrat44@gmail.com",
-  },
-  {
-    id: "5kma53ae",
-    amount: 874,
-    status: "success",
-    email: "Silas22@gmail.com",
-  },
-  {
-    id: "bhqecj4p",
-    amount: 721,
-    status: "failed",
-    email: "carmella@hotmail.com",
+    id: 1,
+    typeId: 1,
+    brandId: 1,
+    description: "Iphone 15",
+    available: true,
+    image: "https://cdn.akakce.com/z/apple/iphone-15.jpg",
+    price: 900,
   },
 ];
 
-export type Payment = {
-  id: string;
-  amount: number;
-  status: "pending" | "processing" | "success" | "failed";
-  email: string;
+type Product = {
+  id: number;
+  brandId: number;
+  typeId: number;
+  description: string;
+  available: boolean;
+  image: string;
+  price: number;
 };
 
-export const columns: ColumnDef<Payment>[] = [
+type ApiResponse = {
+  code: string;
+  message: string;
+  responseData: Product[];
+};
+
+const NewProducts = () => {
+  const [products, setProducts] = React.useState<ApiResponse | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    async function fetchData() {
+      const url = 'http://localhost:5269/api/EticaretApi/GetProducts'; // URL string olarak belirtilmeli
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(); // Backtick içinde yazım hatası düzeltildi
+        }
+
+        const data: ApiResponse = await response.json(); // JSON yanıtı ApiResponse tipine dönüştürüldü
+        setProducts(data);
+        console.log(data);
+      } catch (error: any) {
+        setError(error.message);
+      }
+    }
+
+    fetchData();
+  }, []);
+}
+export const columns: ColumnDef<Product>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -100,38 +116,57 @@ export const columns: ColumnDef<Payment>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: "id",
+    header: "Product ID",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("status")}</div>
+      <div className="capitalize">{row.getValue("id")}</div>
     ),
   },
   {
-    accessorKey: "email",
+    accessorKey: "typeId",
+    header: "Type ID",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("typeId")}</div>
+    ),
+  },
+  {
+    accessorKey: "brandId",
+    header: "Brand ID",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("brandId")}</div>
+    ),
+  },
+  {
+    accessorKey: "description",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Email
+          Description
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
+    cell: ({ row }) => <div>{row.getValue("description")}</div>,
   },
   {
-    accessorKey: "amount",
-    header: () => <div className="text-right">Amount</div>,
+    accessorKey: "image",
+    header: "Image Link",
+    cell: ({ row }) => <button><div>{row.getValue("image")}</div></button>,
+  },
+  {
+    accessorKey: "price",
+    header: () => <div className="text-right">Price</div>,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"));
+      const price = parseFloat(row.getValue("price"));
 
       // Format the amount as a dollar amount
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
-      }).format(amount);
+      }).format(price);
 
       return <div className="text-right font-medium">{formatted}</div>;
     },
@@ -152,14 +187,9 @@ export const columns: ColumnDef<Payment>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
-            >
-              Copy payment ID
+            <DropdownMenuItem>
+              Change Product Settings
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -199,10 +229,10 @@ export function ProductTable() {
     <div className="w-full">
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter emails..."
-          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+          placeholder="Filter descriptions..."
+          value={(table.getColumn("description")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("email")?.setFilterValue(event.target.value)
+            table.getColumn("description")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -244,9 +274,9 @@ export function ProductTable() {
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   );
                 })}
@@ -310,3 +340,6 @@ export function ProductTable() {
     </div>
   );
 }
+
+export default NewProducts;
+
