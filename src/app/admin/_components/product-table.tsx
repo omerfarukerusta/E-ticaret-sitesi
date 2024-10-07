@@ -1,6 +1,6 @@
 "use client";
 
-import { getData } from '@/lib/api'
+import { getData } from "@/lib/api";
 
 import * as React from "react";
 import {
@@ -38,8 +38,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-
-const data: Product[] = [
+const mockData: Product[] = [
   {
     id: 1,
     typeId: 1,
@@ -67,31 +66,6 @@ type ApiResponse = {
   responseData: Product[];
 };
 
-const NewProducts = () => {
-  const [products, setProducts] = React.useState<ApiResponse | null>(null);
-  const [error, setError] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    async function fetchData() {
-      const url = 'http://localhost:5269/api/EticaretApi/GetProducts'; // URL string olarak belirtilmeli
-
-      try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(); // Backtick içinde yazım hatası düzeltildi
-        }
-
-        const data: ApiResponse = await response.json(); // JSON yanıtı ApiResponse tipine dönüştürüldü
-        setProducts(data);
-        console.log(data);
-      } catch (error: any) {
-        setError(error.message);
-      }
-    }
-
-    fetchData();
-  }, []);
-}
 export const columns: ColumnDef<Product>[] = [
   {
     id: "select",
@@ -118,9 +92,7 @@ export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "id",
     header: "Product ID",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("id")}</div>
-    ),
+    cell: ({ row }) => <div className="capitalize">{row.getValue("id")}</div>,
   },
   {
     accessorKey: "typeId",
@@ -145,7 +117,6 @@ export const columns: ColumnDef<Product>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Description
-          <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -154,7 +125,11 @@ export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "image",
     header: "Image Link",
-    cell: ({ row }) => <button><div>{row.getValue("image")}</div></button>,
+    cell: ({ row }) => (
+      <button>
+        <div>{row.getValue("image")}</div>
+      </button>
+    ),
   },
   {
     accessorKey: "price",
@@ -187,9 +162,7 @@ export const columns: ColumnDef<Product>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>
-              Change Product Settings
-            </DropdownMenuItem>
+            <DropdownMenuItem>Change Product Settings</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -206,8 +179,32 @@ export function ProductTable() {
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
+  const [products, setProducts] = React.useState<Product[] | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    async function fetchData() {
+      const url = "http://localhost:5269/api/EticaretApi/GetProducts"; // URL string olarak belirtilmeli
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(); // Backtick içinde yazım hatası düzeltildi
+        }
+
+        const data: ApiResponse = await response.json(); // JSON yanıtı ApiResponse tipine dönüştürüldü
+        setProducts(data.responseData);
+        console.log(data);
+      } catch (error: any) {
+        setError(error.message);
+      }
+    }
+
+    fetchData();
+  }, []);
+
   const table = useReactTable({
-    data,
+    data: products ? products : mockData,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -230,7 +227,9 @@ export function ProductTable() {
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter descriptions..."
-          value={(table.getColumn("description")?.getFilterValue() as string) ?? ""}
+          value={
+            (table.getColumn("description")?.getFilterValue() as string) ?? ""
+          }
           onChange={(event) =>
             table.getColumn("description")?.setFilterValue(event.target.value)
           }
@@ -274,9 +273,9 @@ export function ProductTable() {
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                     </TableHead>
                   );
                 })}
@@ -341,5 +340,4 @@ export function ProductTable() {
   );
 }
 
-export default NewProducts;
-
+export default ProductTable;
